@@ -22,6 +22,14 @@ defmodule TodoElixirWeb.TodoLive do
     end
   end
 
+  def handle_event("delete", %{"id" => id}, socket) do
+    id = String.to_integer(id)
+    task = Tasks.get_task!(id)
+    {:ok, _} = Tasks.delete_task(task)
+
+    {:noreply, assign(socket, tasks: Tasks.list_tasks())}
+  end
+
   def render(assigns) do
     ~H"""
     <main style="max-width: 600px; margin: 40px auto; font-family: sans-serif;">
@@ -34,7 +42,17 @@ defmodule TodoElixirWeb.TodoLive do
 
       <ul>
         <%= for task <- @tasks do %>
-          <li><%= task.title %></li>
+          <li style="display:flex; gap:10px; align-items:center; margin-top:8px;">
+            <span><%= task.title %></span>
+
+            <button
+              type="button"
+              phx-click="delete"
+              phx-value-id={task.id}
+            >
+              Excluir
+            </button>
+          </li>
         <% end %>
       </ul>
     </main>
