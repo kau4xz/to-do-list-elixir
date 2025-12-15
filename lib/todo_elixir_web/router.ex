@@ -17,7 +17,7 @@ defmodule TodoElixirWeb.Router do
   scope "/", TodoElixirWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", TodoLive
   end
 
   # Other scopes may use custom stacks.
