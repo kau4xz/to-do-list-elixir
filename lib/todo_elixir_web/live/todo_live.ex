@@ -3,12 +3,10 @@ defmodule TodoElixirWeb.TodoLive do
   alias TodoElixir.Tasks
 
   def mount(_params, _session, socket) do
-    socket =
-      socket
-      |> assign(:tasks, Tasks.list_tasks())
-      |> assign(:form, to_form(%{"title" => ""}))
-
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(:tasks, Tasks.list_tasks())
+     |> assign(:form, to_form(%{"title" => ""}))}
   end
 
   def handle_event("add", %{"title" => title}, socket) do
@@ -17,62 +15,72 @@ defmodule TodoElixirWeb.TodoLive do
     if title == "" do
       {:noreply, socket}
     else
-      {:ok, _task} = Tasks.create_task(%{"title" => title})
+      {:ok, _} = Tasks.create_task(%{"title" => title})
       {:noreply, assign(socket, tasks: Tasks.list_tasks(), form: to_form(%{"title" => ""}))}
     end
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
-    id = String.to_integer(id)
-    task = Tasks.get_task!(id)
+    task = Tasks.get_task!(String.to_integer(id))
     {:ok, _} = Tasks.delete_task(task)
-
     {:noreply, assign(socket, tasks: Tasks.list_tasks())}
   end
 
   def handle_event("toggle_complete", %{"id" => id}, socket) do
-    id = String.to_integer(id)
-    task = Tasks.get_task!(id)
+    task = Tasks.get_task!(String.to_integer(id))
     {:ok, _} = Tasks.toggle_complete(task)
-
     {:noreply, assign(socket, tasks: Tasks.list_tasks())}
   end
 
   def render(assigns) do
     ~H"""
-    <main style="max-width: 600px; margin: 40px auto; font-family: sans-serif;">
-      <h1>Todo List</h1>
+    <main class="min-h-screen bg-base-200">
+      <div class="container mx-auto max-w-2xl p-6">
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h1 class="card-title text-2xl">Todo List</h1>
 
-      <.form for={@form} phx-submit="add">
-        <input type="text" name="title" placeholder="Nova tarefa..." />
-        <button type="submit">Adicionar</button>
-      </.form>
+            <.form for={@form} phx-submit="add" class="flex gap-2">
+              <input
+                type="text"
+                name="title"
+                placeholder="Nova tarefa..."
+                class="input input-bordered w-full"
+              />
+              <button type="submit" class="btn btn-primary">Adicionar</button>
+            </.form>
 
-      <ul>
-        <%= for task <- @tasks do %>
-          <li style="display:flex; gap:10px; align-items:center; margin-top:8px;">
-            <span style={if task.done, do: "text-decoration: line-through; opacity: 0.7;", else: ""}>
-              <%= task.title %>
-            </span>
+            <div class="divider"></div>
 
-            <button
-              type="button"
-              phx-click="toggle_complete"
-              phx-value-id={task.id}
-            >
-              <%= if task.done, do: "Desmarcar", else: "Concluir" %>
-            </button>
+            <ul class="space-y-2">
+              <%= for task <- @tasks do %>
+                <li class="flex items-center justify-between gap-3 p-3 rounded-lg bg-base-200">
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      class="checkbox"
+                      checked={task.done}
+                      phx-click="toggle_complete"
+                      phx-value-id={task.id}
+                    />
+                    <span class={if task.done, do: "line-through opacity-60", else: ""}>
+                      <%= task.title %>
+                    </span>
+                  </div>
 
-            <button
-              type="button"
-              phx-click="delete"
-              phx-value-id={task.id}
-            >
-              Excluir
-            </button>
-          </li>
-        <% end %>
-      </ul>
+                  <button class="btn btn-sm btn-error" phx-click="delete" phx-value-id={task.id}>
+                    Excluir
+                  </button>
+                </li>
+              <% end %>
+            </ul>
+
+            <%= if Enum.empty?(@tasks) do %>
+              <p class="opacity-60">Nenhuma tarefa ainda. Adicione a primeira 👆</p>
+            <% end %>
+          </div>
+        </div>
+      </div>
     </main>
     """
   end
