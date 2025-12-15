@@ -1,10 +1,11 @@
 defmodule TodoElixirWeb.TodoLive do
   use TodoElixirWeb, :live_view
+  alias TodoElixir.Tasks
 
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:tasks, [])
+      |> assign(:tasks, Tasks.list_tasks())
       |> assign(:form, to_form(%{"title" => ""}))
 
     {:ok, socket}
@@ -13,15 +14,12 @@ defmodule TodoElixirWeb.TodoLive do
   def handle_event("add", %{"title" => title}, socket) do
     title = String.trim(title)
 
-    tasks =
-      if title == "" do
-        socket.assigns.tasks
-      else
-        id = System.unique_integer([:positive])
-        [%{id: id, title: title, done: false} | socket.assigns.tasks]
-      end
-
-    {:noreply, assign(socket, tasks: tasks, form: to_form(%{"title" => ""}))}
+    if title == "" do
+      {:noreply, socket}
+    else
+      {:ok, _task} = Tasks.create_task(%{"title" => title})
+      {:noreply, assign(socket, tasks: Tasks.list_tasks(), form: to_form(%{"title" => ""}))}
+    end
   end
 
   def render(assigns) do
