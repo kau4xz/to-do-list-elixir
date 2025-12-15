@@ -8,14 +8,15 @@ defmodule TodoElixir.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      TodoElixir.Repo,
       TodoElixirWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:todo_elixir, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: TodoElixir.PubSub},
-      # Start a worker by calling: TodoElixir.Worker.start_link(arg)
-      # {TodoElixir.Worker, arg},
-      # Start to serve requests, typically the last entry
+      {Finch, name: TodoElixir.Finch},
       TodoElixirWeb.Endpoint
     ]
+
+
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

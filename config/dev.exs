@@ -80,3 +80,12 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :todo_elixir, TodoElixir.Repo,
+  database: Path.expand("../todo_elixir_dev.sqlite3", __DIR__),
+  pool_size: 5,
+  show_sensitive_data_on_connection_error: true
+
+
+config :phoenix_live_view, :colocated_js,
+  disable_symlink_warning: true
